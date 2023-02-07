@@ -1,0 +1,33 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Posts{
+  id Int @default(autoincrement()) @id
+  item String
+  price Int
+  income Boolean
+  spending Boolean
+  comment String
+  cretedAt DateTime
+}
+
+//prisma migrate dev --preview-feature 
+//まだmigrateしてない！↓
+
+model Kakeibo{
+  id Int @default(autoincrement()) @id
+  item String
+  income Int
+  spending Int
+  comment String
+  cretedAt DateTime
+}
