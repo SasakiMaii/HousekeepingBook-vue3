@@ -20,7 +20,7 @@ model Posts{
   cretedAt DateTime
 }
 
-//prisma migrate dev --preview-feature 
+//prisma migrate dev --preview-feature マイグレート
 //まだmigrateしてない！↓
 
 model Kakeibo{
@@ -30,4 +30,11 @@ model Kakeibo{
   spending Int
   comment String
   cretedAt DateTime
+}
+
+model Users{
+  id Int @default(autoincrement()) @id
+  email String @unique
+  name String?
+  password String
 }

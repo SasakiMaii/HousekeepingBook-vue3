@@ -1,6 +1,6 @@
 <template>
   <button
-    class="bg-blue-400 hover:bg-gray-300 text-white rounded px-4 py-2"
+    class="bg-orange-400 hover:bg-orange-500 text-white rounded px-4 py-2"
     v-show="modalBtn"
     @click="modalClick"
   >
@@ -71,10 +71,9 @@
 </template>
 
 <script setup>
-import { computed, ref } from "vue";
-import { useRoute,useRouter } from "vue-router";
-const router = useRouter()
-const route = useRoute()
+import { ref } from "vue";
+import { useRouter } from "vue-router";
+const router = useRouter();
 
 const kakeiboDatas = ref([]);
 const kakeibo = ref("");
@@ -86,7 +85,7 @@ const price = ref("");
 const income = ref("");
 const spending = ref("");
 const comment = ref("");
-const cretedAt = ref("");
+// const cretedAt = ref("");
 const items = [
   "食費",
   "光熱費",
@@ -99,7 +98,6 @@ const items = [
   "給与",
   "その他",
 ];
-// console.log(items.value)
 
 //３桁カンマ、半角数字以外は削除
 const kanmaChange = () => {
@@ -145,6 +143,8 @@ const removeComma = (num) => {
   return parseInt(removed, 10);
 };
 
+console.log(item.value, "項目");
+
 const submit = async () => {
   modalShow.value = false;
   modalBtn.value = true;
@@ -158,7 +158,7 @@ const submit = async () => {
     spending.value = removeComma(spending.value);
   }
 
-  // console.log(item.value,'項目');
+  console.log(item.value, "項目");
   // console.log(Number(income.value),'収入');
   // console.log(Number(spending.value),'支出');
   // console.log(comment.value,'コメント');
@@ -181,7 +181,7 @@ const submit = async () => {
   });
   const data = await response.json();
   kakeiboDatas.value.push(data);
-  router.go({path: '/', force: true})
+  router.go({ path: "/", force: true });
   kakeibo.value = "";
 };
 

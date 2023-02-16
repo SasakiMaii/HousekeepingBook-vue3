@@ -11,9 +11,43 @@ app.use(cors());
 app.get("/", (req, res) => res.send("Hello World!"));
 
 app.get("/kakeibo", async (req, res) => {
-  const kakeibo = await prisma.kakeibo.findMany();
+  const kakeibo = await prisma.kakeibo.findMany({
+    orderBy:[
+      {
+        cretedAt:'desc',
+      }
+    ]
+  });
   return res.json(kakeibo);
 });
+
+app.get("/login", async (req, res) => {
+  const user = await prisma.users.findMany();
+  return res.json(user);
+});
+
+
+app.get("/:id", async (req, res) => {
+  const id = req.params.id;
+  const kakeibo = await prisma.kakeibo.findUnique({
+    where:{
+      id:Number(id)
+    }
+  });
+  return res.json(kakeibo);
+});
+
+
+app.delete("/:id", async (req, res) => {
+  const id = req.params.id;
+  const deletekakeibo = await prisma.kakeibo.delete({
+    where:{
+      id:Number(id)
+    }
+  });
+  return res.json(deletekakeibo);
+});
+
 
 app.post("/kakeibo", async (req, res) => {
   const { item, income, spending, comment, cretedAt } = req.body;
@@ -27,6 +61,23 @@ app.post("/kakeibo", async (req, res) => {
     },
   });
   return res.json(kakeibo);
+});
+
+app.put("/:id", async (req, res) => {
+   const id = req.params.id;
+  const { item, income, spending, comment } = req.body;
+  const updateKakeibo = await prisma.kakeibo.update({
+    where:{
+      id:Number(id)
+    },
+    data: {
+      item:item,
+      income:income,
+      spending:spending,
+      comment:comment,
+    },
+  });
+  return res.json(updateKakeibo);
 });
 
 
