@@ -139,7 +139,11 @@ const kakeiboDelete = async (kakeiboId) => {
     <header class="bg-orange-100 p-4">
       <div class="flex justify-between items-center mb-4">
         <h1 class="mr-6 text-3xl p-2">家計簿</h1>
-        <Modalkakeibo />
+        <div>
+          <Modalkakeibo />
+          <font-awesome-icon icon="fa-solid fa-user" class="fa-lg" />
+          <router-link to="/login" class="ml-6">ログイン</router-link>
+        </div>
       </div>
     </header>
     <div class="flex justify-between items-center p-6">

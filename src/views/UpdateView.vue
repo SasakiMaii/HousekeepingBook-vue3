@@ -8,12 +8,13 @@ const route = useRoute();
 console.log(route.query.id, "パラメーター");
 // const price=kakeiboDatas.value.price.toLocalString()
 const kakeiboDatas = ref([]);
-// const income = ref();
-// const spending = ref();
+const income = ref();
+const spending = ref();
 // const balance = ref();
 // const yearAndMonth = ref([]);
 // const days = ref([]);
 // const day = ref("initial");
+const radio = ref("");
 const kakeibo = [];
 const item = ref("");
 const price = ref(kakeibo.income || kakeibo.spending);
@@ -32,12 +33,22 @@ const items = [
   "その他",
 ];
 
-//値段の３桁コンマを外す
-// const removeComma = (num) => {
-//   let removed = num.replace(/,/g, "");
-//   console.log(removed, "remove");
-//   return parseInt(removed, 10);
-// };
+// 値段の３桁コンマを外す
+const removeComma = (num) => {
+  let removed = num.replace(/,/g, "");
+  console.log(removed, "remove");
+  return parseInt(removed, 10);
+};
+
+const kanmaChange = () => {
+  let inputAnsValue = price.value;
+  let numberAns = inputAnsValue.replace(/[^0-9]/g, "");
+  let kanmaAns = numberAns.replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1,");
+  if (kanmaAns.match(/[^0-9]/g)) {
+    price.value = kanmaAns;
+    return true;
+  }
+};
 
 //家計簿情報
 const getKakeibo = async () => {
@@ -45,7 +56,7 @@ const getKakeibo = async () => {
   const data = await response.json();
   kakeiboDatas.value = data;
   console.log(kakeiboDatas.value);
-
+  console.log(kakeiboDatas.value.cretedAt);
   let ndate = new Date(kakeiboDatas.value.cretedAt);
   const yy = ndate.getFullYear();
   const mm = ("0" + (ndate.getMonth() + 1)).slice(-2);
@@ -58,15 +69,51 @@ const getKakeibo = async () => {
 
   if (kakeibo[0].income === 0) {
     price.value = kakeibo[0].spending;
+    price.value = price.value.toLocaleString();
   } else {
     price.value = kakeibo[0].income;
+    price.value = price.value.toLocaleString();
   }
   item.value = kakeibo[0].item;
   date.value = kakeibo[0].cretedAt;
   comment.value = kakeibo[0].comment;
+  console.log(date.value);
+  console.log(Date.parse(date.value));
 };
-
 getKakeibo();
+
+const kakeiboUpdate = async () => {
+  if (radio.value === "収入") {
+    income.value = price.value;
+    income.value = removeComma(income.value);
+    console.log(typeof income.value);
+  } else if (radio.value === "支出") {
+    spending.value = price.value;
+    spending.value = removeComma(spending.value);
+  }
+  const updateDate = new Date(Date.parse(date.value));
+
+  const response = await fetch(`http://localhost:8008/${route.query.id}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      item: item.value,
+      income: Number(income.value) || 0,
+      spending: Number(spending.value) || 0,
+      comment: comment.value || "",
+      cretedAt: updateDate,
+    }),
+  }).catch((err) => {
+    console.log(err, "エラー");
+  });
+
+  const data = await response.json();
+  kakeiboDatas.value = data;
+  router.push({ path: "/", force: true });
+  kakeiboDatas.value.push(data);
+};
 
 const kakeiboDelete = async () => {
   const response = await fetch(`http://localhost:8008/${route.query.id}`, {
@@ -82,8 +129,6 @@ const kakeiboDelete = async () => {
   router.push({ path: "/", force: true });
   kakeiboDatas.value.push(data);
 };
-
-
 
 const returnBtn = () => {
   router.push({ path: "/", force: true });
@@ -102,16 +147,9 @@ const returnBtn = () => {
     <div class="text-center">
       <!-- <h1 class="text-lg border-b-2">登録内容変更</h1> -->
       <div class="my-8">
-        <label for="price">登録日</label>
+        <label for="date">登録日</label>
         <br />
-        <input
-          type="date"
-          id="price"
-          class="border-2 mt-2"
-          v-model="date"
-          @blur="kanmaChange"
-          pattern="\d*"
-        />
+        <input id="date" type="date" class="border-2 mt-2" v-model="date" />
       </div>
 
       <div class="my-5">
@@ -128,7 +166,7 @@ const returnBtn = () => {
           </option>
         </select>
       </div>
-      <!-- <div class="my-3">
+      <div class="my-3">
         <label for="income">収入</label>
         <input
           class="mr-4"
@@ -139,12 +177,12 @@ const returnBtn = () => {
         />
         <label for="spending">支出</label>
         <input type="radio" id="spending" v-model="radio" value="支出" />
-      </div> -->
+      </div>
       <div class="my-5">
         <label for="price">金額</label>
         <br />
         <input
-          type="text"
+          type="tel"
           id="price"
           class="border-2 mt-2"
           v-model="price"
@@ -168,7 +206,7 @@ const returnBtn = () => {
 
       <button
         class="bg-gray-400 hover:bg-gray-300 text-white rounded px-4 py-2"
-        @click="submit"
+        @click="kakeiboUpdate"
       >
         更新
       </button>
