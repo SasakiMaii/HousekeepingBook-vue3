@@ -162,7 +162,7 @@ const submit = async () => {
   // console.log(Number(income.value),'収入');
   // console.log(Number(spending.value),'支出');
   // console.log(comment.value,'コメント');
-  // console.log(now,'時刻');
+  console.log(now, "時刻");
 
   const response = await fetch("http://localhost:8008/kakeibo", {
     method: "POST",

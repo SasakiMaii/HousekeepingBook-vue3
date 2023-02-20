@@ -1,10 +1,11 @@
 <script setup>
 import Modalkakeibo from "../components/ModalKakeibo.vue";
+import Logout from "../components/LogoutViwe.vue";
 import { ref } from "vue";
 import { useRouter } from "vue-router";
 
 const router = useRouter();
-// const price=kakeiboDatas.value.price.toLocalString()
+const localStrages = localStorage.length === 0;
 const kakeiboDatas = ref([]);
 const income = ref();
 const spending = ref();
@@ -12,13 +13,6 @@ const balance = ref();
 const yearAndMonth = ref([]);
 const days = ref([]);
 const day = ref("initial");
-
-//値段の３桁コンマを外す
-// const removeComma = (num) => {
-//   let removed = num.replace(/,/g, "");
-//   console.log(removed, "remove");
-//   return parseInt(removed, 10);
-// };
 
 //家計簿情報
 const getKakeibo = async () => {
@@ -35,8 +29,6 @@ const getKakeibo = async () => {
       ndate.getDate() +
       "日";
     date.cretedAt = registerDate;
-
-    // console.log(registerDate)
 
     //DBに登録されている年月の表示
     let monthDate = ndate.getFullYear() + "年" + (ndate.getMonth() + 1) + "月";
@@ -120,18 +112,6 @@ const kakeiboDelete = async (kakeiboId) => {
   kakeiboDatas.value.push(data);
   router.go({ path: "/", force: true });
 };
-//更新
-// const kakeiboUpdate = async (kakeiboId) => {
-//   const response = await fetch(`http://localhost:8008/${kakeiboId}`, {
-//     method: "PUT",
-//     headers: {
-//       "Content-Type": "application/json",
-//     },
-//     body: JSON.stringify({
-//       item: kakeiboDatas.value.item,
-//     }),
-//   });
-// };
 </script>
 
 <template>
@@ -139,7 +119,17 @@ const kakeiboDelete = async (kakeiboId) => {
     <header class="bg-orange-100 p-4">
       <div class="flex justify-between items-center mb-4">
         <h1 class="mr-6 text-3xl p-2">家計簿</h1>
-        <Modalkakeibo />
+        <div>
+          <Modalkakeibo />
+          <span v-if="localStrages">
+            <router-link
+              to="/login"
+              class="shadow-lg bg-orange-300 shadow-orange-400/50 text-black rounded px-2 py-1 ml-8"
+              >ログイン</router-link
+            >
+          </span>
+          <Logout />
+        </div>
       </div>
     </header>
     <div class="flex justify-between items-center p-6">
@@ -163,7 +153,7 @@ const kakeiboDelete = async (kakeiboId) => {
         <select
           name="month"
           id="month"
-          class="text-xl border-b-4"
+          class="text-xl border-b-2"
           v-model="day"
           :value="day"
           @change="dateSelect"
