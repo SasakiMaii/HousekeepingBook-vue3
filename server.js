@@ -21,7 +21,7 @@ app.get("/kakeibo", async (req, res) => {
   return res.json(kakeibo);
 });
 
-app.get("/login", async (req, res) => {
+app.get("/register", async (req, res) => {
   const user = await prisma.users.findMany();
   return res.json(user);
 });
@@ -58,6 +58,18 @@ app.post("/kakeibo", async (req, res) => {
     },
   });
   return res.json(kakeibo);
+});
+
+app.post("/register", async (req, res) => {
+  const { email, name, password } = req.body;
+  const register = await prisma.users.create({
+    data: {
+      email: email,
+      name: name,
+      password: password,
+    },
+  });
+  return res.json(register);
 });
 
 app.put("/:id", async (req, res) => {
