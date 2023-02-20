@@ -51,10 +51,9 @@ const getKakeibo = async () => {
   //収支差
   balance.value = income.value - spending.value;
 };
-
 getKakeibo();
 
-//selectした情報表示
+//selectした(選択した年月)情報表示
 const dateSelect = async () => {
   // 同じこと書いてるので関数にまとめたい
   const response = await fetch("http://localhost:8008/kakeibo");
@@ -78,7 +77,6 @@ const dateSelect = async () => {
   const filter = kakeiboDatas.value.filter((data) => {
     return data.cretedAt.includes(day.value);
   });
-  console.log(filter);
   kakeiboDatas.value = filter;
 
   income.value = kakeiboDatas.value.reduce((sum, el) => {
@@ -88,6 +86,10 @@ const dateSelect = async () => {
   spending.value = kakeiboDatas.value.reduce((sum, el) => {
     return sum + el.spending;
   }, 0);
+
+  if (spending.value >= 200000) {
+    alert("合計使用金額が20万円を超えています");
+  }
 
   //収支差
   balance.value = income.value - spending.value;
