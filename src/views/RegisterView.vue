@@ -50,6 +50,13 @@
                   {{ duplicationerror }}
                 </p></span
               >
+              <span
+                v-for="(emailFormaterr, index) in emailFormaterrs"
+                :key="index"
+                ><p v-if="emailFormaterr" class="text-red-400 text-xs">
+                  {{ emailFormaterr }}
+                </p></span
+              >
               <input
                 type="email"
                 name="email"
@@ -85,6 +92,7 @@
               />
             </div>
             <button
+              type="submit"
               @click.prevent="register"
               class="w-full text-white bg-gray-600 hover:bg-gray-700 focus:ring-4 focus:outline-none focus:ring-gray-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-gray-600 dark:hover:bg-gray-700 dark:focus:ring-gray-800"
             >
@@ -116,6 +124,7 @@ const errors = ref([]);
 const passerrors = ref([]);
 const emailerrors = ref([]);
 const duplicationerrors = ref([]);
+const emailFormaterrs = ref([]);
 const users = ref([]);
 const router = useRouter();
 
@@ -126,13 +135,17 @@ const register = async () => {
   const emailDuplication = users.value.filter((user) => {
     return user.email === email.value;
   });
+  let pattern =
+    /^[A-Za-z0-9]{1}[A-Za-z0-9_.-]*@{1}[A-Za-z0-9_.-]+.[A-Za-z0-9]+$/;
 
   if (
     email.value &&
     password.value &&
     password.value.length >= 8 &&
-    emailDuplication === 0
+    emailDuplication.length === 0 &&
+    pattern.test(email.value)
   ) {
+    console.log("1");
     const response = await fetch("http://localhost:8008/register", {
       method: "POST",
       headers: {
@@ -154,21 +167,27 @@ const register = async () => {
     const emptypass = "パスワードを入力してください";
     const emptyemail = "メールアドレスを入力してください";
     const duplicationerr = "メールアドレスが存在します。";
+    const emailFormaterr = "メールアドレスの形式で入力してください";
 
     emailerrors.value = [];
     errors.value = [];
     passerrors.value = [];
     duplicationerrors.value = [];
+    emailFormaterrs.value = [];
 
     if (emailDuplication.length >= 1 && !duplicationerrors.value.length) {
       duplicationerrors.value.push(duplicationerr);
+    }
+    if (!pattern.test(email.value)) {
+      emailFormaterrs.value.push(emailFormaterr);
     }
     if (!email.value && !emailerrors.value.length) {
       emailerrors.value.push(emptyemail);
     }
 
-    if (password.value.length <= 8 && !errors.value.length) {
+    if (password.value.length < 8 && !errors.value.length) {
       errors.value.push(passerr);
+      console.log("a");
     }
     if (!password.value && !passerrors.value.length) {
       passerrors.value.push(emptypass);

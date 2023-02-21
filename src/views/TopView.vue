@@ -13,12 +13,14 @@ const balance = ref();
 const yearAndMonth = ref([]);
 const days = ref([]);
 const day = ref("initial");
+const dateChange = ref(false);
 
-//家計簿情報
+// 家計簿情報
 const getKakeibo = async () => {
   const response = await fetch("http://localhost:8008/kakeibo");
   const data = await response.json();
   kakeiboDatas.value = data;
+  //timestamp型を変換
   kakeiboDatas.value.map((date) => {
     let ndate = new Date(date.cretedAt);
     let registerDate =
@@ -39,24 +41,22 @@ const getKakeibo = async () => {
   const set = new Set(yearAndMonth.value);
   days.value = [...set];
 
-  //収入
+  // 収入
   income.value = kakeiboDatas.value.reduce((sum, el) => {
     return sum + el.income;
   }, 0);
-  //支出
+  // 支出
   spending.value = kakeiboDatas.value.reduce((sum, el) => {
     return sum + el.spending;
   }, 0);
 
-  //収支差
+  // 収支差
   balance.value = income.value - spending.value;
 };
-
 getKakeibo();
-
-//selectした情報表示
+//selectした(選択した年月)情報表示
 const dateSelect = async () => {
-  // 同じこと書いてるので関数にまとめたい
+  dateChange.value = true;
   const response = await fetch("http://localhost:8008/kakeibo");
   const data = await response.json();
   kakeiboDatas.value = data;
@@ -75,12 +75,12 @@ const dateSelect = async () => {
   });
   const set = new Set(yearAndMonth.value);
   days.value = [...set];
+
   const filter = kakeiboDatas.value.filter((data) => {
     return data.cretedAt.includes(day.value);
   });
-  console.log(filter);
   kakeiboDatas.value = filter;
-
+  //収入
   income.value = kakeiboDatas.value.reduce((sum, el) => {
     return sum + el.income;
   }, 0);
@@ -88,6 +88,10 @@ const dateSelect = async () => {
   spending.value = kakeiboDatas.value.reduce((sum, el) => {
     return sum + el.spending;
   }, 0);
+
+  if (spending.value >= 200000) {
+    alert("合計使用金額が20万円を超えています");
+  }
 
   //収支差
   balance.value = income.value - spending.value;
@@ -111,6 +115,45 @@ const kakeiboDelete = async (kakeiboId) => {
   // console.log(data)
   kakeiboDatas.value.push(data);
   router.go({ path: "/", force: true });
+};
+
+const nextPage = async () => {
+  const response = await fetch(`http://localhost:8008/nextpage`);
+  const data = response.json();
+  kakeiboDatas.value = await data;
+  console.log(kakeiboDatas.value);
+  kakeiboDatas.value.map((date) => {
+    let ndate = new Date(date.cretedAt);
+    let registerDate =
+      ndate.getFullYear() +
+      "年" +
+      (ndate.getMonth() + 1) +
+      "月" +
+      ndate.getDate() +
+      "日";
+    date.cretedAt = registerDate;
+    let monthDate = ndate.getFullYear() + "年" + (ndate.getMonth() + 1) + "月";
+    yearAndMonth.value.push(monthDate);
+  });
+};
+const prevPage = async () => {
+  const response = await fetch(`http://localhost:8008/prevpage`);
+  const data = response.json();
+  kakeiboDatas.value = await data;
+  console.log(kakeiboDatas.value);
+  kakeiboDatas.value.map((date) => {
+    let ndate = new Date(date.cretedAt);
+    let registerDate =
+      ndate.getFullYear() +
+      "年" +
+      (ndate.getMonth() + 1) +
+      "月" +
+      ndate.getDate() +
+      "日";
+    date.cretedAt = registerDate;
+    let monthDate = ndate.getFullYear() + "年" + (ndate.getMonth() + 1) + "月";
+    yearAndMonth.value.push(monthDate);
+  });
 };
 </script>
 
@@ -198,7 +241,7 @@ const kakeiboDelete = async (kakeiboId) => {
               <router-link
                 :to="{
                   path: '/update',
-                  params: { id: kakeiboData.id },
+                  // params: { id: kakeiboData.id },
                   query: { id: kakeiboData.id },
                 }"
                 >変更</router-link
@@ -215,6 +258,20 @@ const kakeiboDelete = async (kakeiboId) => {
           </td>
         </tr>
       </tbody>
+      <div v-if="!dateChange" class="w-full text-center my-5">
+        <button
+          class="shadow-lg bg-stone-200 shadow-stone-300/50 text-black rounded px-2 py-1"
+          @click="prevPage"
+        >
+          戻る
+        </button>
+        <button
+          class="shadow-lg bg-stone-200 shadow-stone-300/50 text-black rounded px-2 py-1 ml-10"
+          @click="nextPage"
+        >
+          次へ
+        </button>
+      </div>
     </table>
   </main>
 </template>

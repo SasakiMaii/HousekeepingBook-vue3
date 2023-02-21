@@ -22,12 +22,22 @@
           </option>
         </select>
       </div>
+      <span v-for="(radioErr, index) in radioErrs" :key="index"
+        ><p v-if="radioErr" class="text-red-400 text-xs">
+          {{ radioErr }}
+        </p></span
+      >
       <div class="my-3">
         <label for="income">収入</label>
         <input type="radio" id="income" v-model="radio" value="収入" />
         <label for="spending">支出</label>
         <input type="radio" id="spending" v-model="radio" value="支出" />
       </div>
+      <span v-for="(priceErr, index) in priceErrs" :key="index"
+        ><p v-if="priceErr" class="text-red-400 text-xs">
+          {{ priceErr }}
+        </p></span
+      >
       <div class="my-3">
         <label for="price">金額</label>
         <br />
@@ -85,6 +95,8 @@ const price = ref("");
 const income = ref("");
 const spending = ref("");
 const comment = ref("");
+const priceErrs = ref([]);
+const radioErrs = ref([]);
 // const cretedAt = ref("");
 const items = [
   "食費",
@@ -103,9 +115,9 @@ const items = [
 const kanmaChange = () => {
   let inputAnsValue = price.value;
   let numberAns = inputAnsValue.replace(/[^0-9]/g, "");
-  console.log(numberAns, "aaa");
+
   let kanmaAns = numberAns.replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1,");
-  console.log(kanmaAns, "aas");
+
   if (kanmaAns.match(/[^0-9]/g)) {
     price.value = kanmaAns;
     return true;
@@ -139,50 +151,58 @@ const now = new Date();
 
 const removeComma = (num) => {
   let removed = num.replace(/,/g, "");
-  console.log(removed, "remove");
   return parseInt(removed, 10);
 };
 
-console.log(item.value, "項目");
-
 const submit = async () => {
-  modalShow.value = false;
-  modalBtn.value = true;
+  priceErrs.value = [];
+  radioErrs.value = [];
 
   if (radio.value === "収入") {
     income.value = price.value;
     income.value = removeComma(income.value);
-    console.log(typeof income.value);
   } else if (radio.value === "支出") {
     spending.value = price.value;
     spending.value = removeComma(spending.value);
   }
 
-  console.log(item.value, "項目");
-  // console.log(Number(income.value),'収入');
-  // console.log(Number(spending.value),'支出');
-  // console.log(comment.value,'コメント');
-  console.log(now, "時刻");
+  if (price.value && radio.value) {
+    modalShow.value = false;
+    modalBtn.value = true;
+    console.log("成功");
+    const response = await fetch("http://localhost:8008/kakeibo", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        item: item.value,
+        income: Number(income.value) || 0,
+        spending: Number(spending.value) || 0,
+        comment: comment.value || "",
+        cretedAt: now,
+      }),
+    }).catch((err) => {
+      console.log(err, "エラー");
+    });
+    const data = await response.json();
+    kakeiboDatas.value.push(data);
+    router.go({ path: "/", force: true });
+    kakeibo.value = "";
+  }
 
-  const response = await fetch("http://localhost:8008/kakeibo", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      item: item.value,
-      income: Number(income.value) || 0,
-      spending: Number(spending.value) || 0,
-      comment: comment.value || "",
-      cretedAt: now,
-    }),
-  }).catch((err) => {
-    console.log(err, "エラー");
-  });
-  const data = await response.json();
-  kakeiboDatas.value.push(data);
-  router.go({ path: "/", force: true });
-  kakeibo.value = "";
+  const priceErr = "金額を入力してください";
+  const radioErr = "収入か支出を選択してください";
+  if (price.value === "" || radio.value === "") {
+    console.log("失敗");
+    if (price.value === "") {
+      priceErrs.value.push(priceErr);
+    }
+
+    if (radio.value === "") {
+      radioErrs.value.push(radioErr);
+    }
+  }
 };
 
 const returnBtn = () => {

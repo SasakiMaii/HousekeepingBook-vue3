@@ -32,6 +32,8 @@ const items = [
   "給与",
   "その他",
 ];
+const priceErrs = ref([]);
+const radioErrs = ref([]);
 
 // 値段の３桁コンマを外す
 const removeComma = (num) => {
@@ -83,6 +85,19 @@ const getKakeibo = async () => {
 getKakeibo();
 
 const kakeiboUpdate = async () => {
+  const priceErr = "金額を入力してください";
+  const radioErr = "収入か支出を選択してください";
+  if (price.value === "" || radio.value === "") {
+    console.log("失敗");
+    if (price.value === "") {
+      priceErrs.value.push(priceErr);
+    }
+
+    if (radio.value === "") {
+      radioErrs.value.push(radioErr);
+    }
+  }
+
   if (radio.value === "収入") {
     income.value = price.value;
     income.value = removeComma(income.value);
@@ -92,27 +107,28 @@ const kakeiboUpdate = async () => {
     spending.value = removeComma(spending.value);
   }
   const updateDate = new Date(Date.parse(date.value));
+  if (price.value && radio.value) {
+    const response = await fetch(`http://localhost:8008/${route.query.id}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        item: item.value,
+        income: Number(income.value) || 0,
+        spending: Number(spending.value) || 0,
+        comment: comment.value || "",
+        cretedAt: updateDate,
+      }),
+    }).catch((err) => {
+      console.log(err, "エラー");
+    });
 
-  const response = await fetch(`http://localhost:8008/${route.query.id}`, {
-    method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      item: item.value,
-      income: Number(income.value) || 0,
-      spending: Number(spending.value) || 0,
-      comment: comment.value || "",
-      cretedAt: updateDate,
-    }),
-  }).catch((err) => {
-    console.log(err, "エラー");
-  });
-
-  const data = await response.json();
-  kakeiboDatas.value = data;
-  router.push({ path: "/", force: true });
-  kakeiboDatas.value.push(data);
+    const data = await response.json();
+    kakeiboDatas.value = data;
+    router.push({ path: "/", force: true });
+    kakeiboDatas.value.push(data);
+  }
 };
 
 const kakeiboDelete = async () => {
@@ -166,6 +182,11 @@ const returnBtn = () => {
           </option>
         </select>
       </div>
+      <span v-for="(radioErr, index) in radioErrs" :key="index"
+        ><p v-if="radioErr" class="text-red-400 text-xs">
+          {{ radioErr }}
+        </p></span
+      >
       <div class="my-3">
         <label for="income">収入</label>
         <input
@@ -178,6 +199,11 @@ const returnBtn = () => {
         <label for="spending">支出</label>
         <input type="radio" id="spending" v-model="radio" value="支出" />
       </div>
+      <span v-for="(priceErr, index) in priceErrs" :key="index"
+        ><p v-if="priceErr" class="text-red-400 text-xs">
+          {{ priceErr }}
+        </p></span
+      >
       <div class="my-5">
         <label for="price">金額</label>
         <br />

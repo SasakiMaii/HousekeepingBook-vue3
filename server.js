@@ -17,8 +17,34 @@ app.get("/kakeibo", async (req, res) => {
         cretedAt: "desc",
       },
     ],
+    skip: 0,
+    take: 10,
   });
   return res.json(kakeibo);
+});
+app.get("/prevpage", async (req, res) => {
+  const kakeibo = await prisma.kakeibo.findMany({
+    orderBy: [
+      {
+        cretedAt: "desc",
+      },
+    ],
+    take: -10,
+  });
+  return res.json(kakeibo);
+});
+
+app.get("/nextpage", async (req, res) => {
+  const results = await prisma.kakeibo.findMany({
+    orderBy: [
+      {
+        cretedAt: "desc",
+      },
+    ],
+    skip: 10,
+    take: 10,
+  });
+  return res.json(results);
 });
 
 app.get("/register", async (req, res) => {
