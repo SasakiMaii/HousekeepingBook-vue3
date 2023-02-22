@@ -3,6 +3,8 @@ const express = require("express");
 const app = express();
 const PORT = 8008;
 const cors = require("cors");
+// import bcrypt from "bcryptjs";
+const bcrypt = require("bcryptjs");
 
 const prisma = new PrismaClient();
 app.use(express.json());
@@ -88,11 +90,12 @@ app.post("/kakeibo", async (req, res) => {
 
 app.post("/register", async (req, res) => {
   const { email, name, password } = req.body;
+  const hashedPassword = await bcrypt.hash(password, 8);
   const register = await prisma.users.create({
     data: {
       email: email,
       name: name,
-      password: password,
+      password: hashedPassword,
     },
   });
   return res.json(register);

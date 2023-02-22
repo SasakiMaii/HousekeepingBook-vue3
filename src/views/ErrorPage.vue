@@ -6,7 +6,7 @@
   </header>
   <p class="text-center p-20">こちらのページは存在しません</p>
   <router-link
-    class="font-medium text-primary-600 hover:underline dark:text-primary-500 "
+    class="font-medium text-primary-600 hover:underline dark:text-primary-500"
     to="/login"
     >→ログインする</router-link
   >
