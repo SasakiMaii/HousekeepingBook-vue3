@@ -4,7 +4,7 @@ import TopView from "../views/TopView.vue";
 import LoginView from "../views/LoginView.vue";
 import UpdateView from "../views/UpdateView.vue";
 import RegisterView from "../views/RegisterView.vue";
-import ErrorPage from "../views/ErrorPage.vue"
+import ErrorPage from "../views/ErrorPage.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
